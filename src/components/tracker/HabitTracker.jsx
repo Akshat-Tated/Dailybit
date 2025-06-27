@@ -29,9 +29,21 @@ export default function HabitTracker({ habits, setHabits, days }) {
 
   const addHabit = () => {
     if (!newHabit.trim() || goal < 1 || goal > 31) return;
+    const now = new Date();
+    const maxDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const parsedGoal = parseInt(goal) || 0;
+    const sanitizedGoal = Math.min(parsedGoal, maxDays);
+    const isMaxGoal = parsedGoal >= maxDays;
+
     setHabits([
       ...habits,
-      { id: Date.now(), name: newHabit, goal, tracking: {} },
+      {
+        id: Date.now(),
+        name: newHabit,
+        goal: sanitizedGoal,
+        dynamicGoal: isMaxGoal,
+        tracking: {},
+      },
     ]);
     setNewHabit("");
     setGoal(31);
@@ -85,7 +97,7 @@ export default function HabitTracker({ habits, setHabits, days }) {
           </button>
         </div>
 
-        <div className="flex rounded-md border-tri bg-sec border max-w-full max-h-[70vh] overflow-auto shadow-md mt-3">
+        <div className="flex rounded-md border-tri bg-sec border max-w-full max-h-[70vh] overflow-auto shadow-md mt-3 custom-scrollbar">
           <div className="w-52 shrink-0 bg-sec border-r border-tri sticky left-0 z-10">
             <div className="h-20 flex justify-center items-center font-bold text-dark border-b border-tri">Habits</div>
             {habits.map((habit) => (
@@ -127,10 +139,14 @@ export default function HabitTracker({ habits, setHabits, days }) {
             </div>
             {habits.map((habit) => {
               const achieved = days.filter((d) => habit.tracking[d.date]).length;
+              const now = new Date();
+              const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+              const displayedGoal = habit.dynamicGoal ? daysInMonth : habit.goal;
+
               return (
                 <div key={habit.id} className="flex h-10 border-b border-tri">
                   <div className="w-16 text-center">{achieved}</div>
-                  <div className="w-16 text-center">{habit.goal}</div>
+                  <div className="w-16 text-center">{displayedGoal}</div> {/* ✅ replaced */}
                 </div>
               );
             })}
